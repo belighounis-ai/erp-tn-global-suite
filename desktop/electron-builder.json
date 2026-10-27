@@ -1,10 +1,23 @@
 {
   "appId": "com.erp.tn.global",
   "productName": "ERP TN Global",
+  "artifactName": "ERP-TN-Global-${version}.${ext}",
   "directories": {
-    "output": "dist"
+    "output": "dist",
+    "buildResources": "build"
   },
   "win": {
-    "target": ["portable", "nsis"]
+    "target": ["portable", "nsis"],
+    "requestedExecutionLevel": "asInvoker"
+  },
+  "portable": {
+    "artifactName": "ERP-TN-Global-Portable.exe"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "ERP TN Global"
   }
 }
