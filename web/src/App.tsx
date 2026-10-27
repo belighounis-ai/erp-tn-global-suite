@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 type JwtResponse = { token: string; username: string; role: string };
 
@@ -18,6 +18,8 @@ type VoucherPayload = {
   lines: VoucherLineForm[];
 };
 
+type ImportExportType = "product" | "customer" | "supplier" | "chartaccount" | "voucher" | "employee" | "journal";
+
 export default function App() {
   const [token, setToken] = useState<string>("");
   const [username, setUsername] = useState("admin");
@@ -35,13 +37,17 @@ export default function App() {
     { accountCode: "211", accountName: "Banques", debitCredit: "DEBIT", amount: 1200 },
     { accountCode: "401", accountName: "Fournisseurs", debitCredit: "CREDIT", amount: 1200 }
   ]);
+  const [importType, setImportType] = useState<ImportExportType>("product");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [importResult, setImportResult] = useState<{ totalRows: number; importedRows: number; rejectedRows: number; errors: string[] } | null>(null);
 
-  const api = async (endpoint: string, method = "GET", body?: unknown) => {
+  const api = async (endpoint: string, method = "GET", body?: unknown, customHeaders?: Record<string, string>) => {
     const resp = await fetch(`https://localhost:5001${endpoint}`, {
       method,
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(customHeaders ?? {})
       },
       body: body ? JSON.stringify(body) : undefined
     });
@@ -127,6 +133,50 @@ export default function App() {
     alert("Pièce comptable créée");
   };
 
+  const downloadTemplate = async (format: "xlsx" | "csv") => {
+    const response = await fetch(`https://localhost:5001/api/ImportExport/template/${importType}?format=${format}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${importType}-template.${format}`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const importFile = async () => {
+    if (!selectedFile) return alert("Sélectionnez un fichier");
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    const response = await fetch(`https://localhost:5001/api/ImportExport/import/${importType}`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData
+    });
+
+    const data = await response.json();
+    setImportResult(data);
+    alert(`Import terminé: ${data.importedRows} lignes importées, ${data.rejectedRows} rejetées`);
+  };
+
+  const exportFile = async (format: "xlsx" | "csv") => {
+    const response = await fetch(`https://localhost:5001/api/ImportExport/export/${importType}?format=${format}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${importType}.${format}`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   const summaryCards = useMemo(() => [
     { label: "Chiffre d'affaires", value: `${report?.totalRevenue ?? 0} TND` },
     { label: "Charges", value: `${report?.totalExpenses ?? 0} TND` },
@@ -166,6 +216,7 @@ export default function App() {
             ["sales", "Ventes"],
             ["stock", "Stock"],
             ["reporting", "Reporting"],
+            ["import-export", "Import / Export"],
             ["security", "Sécurité"]
           ].map(([key, label]) => (
             <button
@@ -306,6 +357,52 @@ export default function App() {
           </div>
         )}
 
+        {menu === "import-export" && (
+          <div style={{ background: "white", borderRadius: 14, padding: 20 }}>
+            <h3>Import / Export Excel & CSV</h3>
+            <div style={{ display: "grid", gap: 14 }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                <select value={importType} onChange={e => setImportType(e.target.value as ImportExportType)} style={{ padding: 10, borderRadius: 8, border: "1px solid #cbd5e1" }}>
+                  <option value="product">Produits</option>
+                  <option value="customer">Clients</option>
+                  <option value="supplier">Fournisseurs</option>
+                  <option value="chartaccount">Comptes</option>
+                  <option value="voucher">Pièces comptables</option>
+                  <option value="employee">Employés</option>
+                  <option value="journal">Journaux</option>
+                </select>
+                <button onClick={() => downloadTemplate("xlsx")} style={{ background: "#0f172a", color: "white", border: "none", borderRadius: 8, padding: "10px 14px", cursor: "pointer" }}>Télécharger modèle Excel</button>
+                <button onClick={() => downloadTemplate("csv")} style={{ background: "#475569", color: "white", border: "none", borderRadius: 8, padding: "10px 14px", cursor: "pointer" }}>Télécharger modèle CSV</button>
+                <button onClick={() => exportFile("xlsx")} style={{ background: "#2563eb", color: "white", border: "none", borderRadius: 8, padding: "10px 14px", cursor: "pointer" }}>Exporter Excel</button>
+                <button onClick={() => exportFile("csv")} style={{ background: "#16a34a", color: "white", border: "none", borderRadius: 8, padding: "10px 14px", cursor: "pointer" }}>Exporter CSV</button>
+              </div>
+
+              <div style={{ border: "1px dashed #94a3b8", borderRadius: 12, padding: 18 }}>
+                <input type="file" accept=".xlsx,.xls,.csv" onChange={e => setSelectedFile(e.target.files?.[0] ?? null)} />
+                <div style={{ marginTop: 12 }}>
+                  <button onClick={importFile} style={{ background: "#dc2626", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", cursor: "pointer" }}>Importer le fichier</button>
+                </div>
+              </div>
+
+              {importResult && (
+                <div style={{ background: "#f8fafc", borderRadius: 10, padding: 14 }}>
+                  <div><strong>Lignes totales:</strong> {importResult.totalRows}</div>
+                  <div><strong>Importées:</strong> {importResult.importedRows}</div>
+                  <div><strong>Rejetées:</strong> {importResult.rejectedRows}</div>
+                  {importResult.errors.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <strong>Erreurs:</strong>
+                      <ul>
+                        {importResult.errors.slice(0, 5).map((err, index) => <li key={index}>{err}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {menu === "security" && (
           <div style={{ background: "white", borderRadius: 14, padding: 20 }}>
             <h3>Sécurité et production</h3>
@@ -314,7 +411,7 @@ export default function App() {
               <li>Rôles : Admin / Finance / Achats / Ventes / Logistique</li>
               <li>Policies d’accès strictes</li>
               <li>API protégée par token</li>
-              <li>Prêt pour réseau local, web et desktop</li>
+              <li>Import / export Excel / CSV prêt</li>
             </ul>
           </div>
         )}

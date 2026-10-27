@@ -30,6 +30,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountingSeedService, AccountingSeedService>();
 builder.Services.AddScoped<IJournalService, JournalService>();
 builder.Services.AddScoped<IReportingService, ReportingService>();
+builder.Services.AddScoped<IImportExportService, ImportExportService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "ERP_TUNISIE_SECRET_KEY_FOR_LOCAL_DEVELOPMENT_2026";
 var issuer = builder.Configuration["Jwt:Issuer"] ?? "ERP-TN";
