@@ -1,3 +1,4 @@
+using ERP.TN.Application.Services;
 using ERP.TN.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,7 @@ public class AppDbContext : DbContext
     public DbSet<Voucher> Vouchers => Set<Voucher>();
     public DbSet<VoucherLine> VoucherLines => Set<VoucherLine>();
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -106,6 +108,13 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(b => b.Id);
             entity.Property(b => b.Name).IsRequired();
+        });
+
+        modelBuilder.Entity<AppUser>(entity =>
+        {
+            entity.HasKey(u => u.Id);
+            entity.Property(u => u.Username).IsRequired();
+            entity.Property(u => u.PasswordHash).IsRequired();
         });
 
         base.OnModelCreating(modelBuilder);

@@ -1,11 +1,13 @@
 using ERP.TN.Application.DTOs;
 using ERP.TN.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.TN.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class PayrollController : ControllerBase
 {
     private readonly IPayrollService _payrollService;
@@ -16,6 +18,7 @@ public class PayrollController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = "OperationsAccess")]
     public async Task<IActionResult> GetRuns()
     {
         var result = await _payrollService.GetRunsAsync();
@@ -23,6 +26,7 @@ public class PayrollController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "OperationsAccess")]
     public async Task<IActionResult> CreateRun([FromBody] CreatePayrollRunRequest request)
     {
         var result = await _payrollService.CreateRunAsync(request);

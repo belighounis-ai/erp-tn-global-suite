@@ -1,10 +1,14 @@
+using ERP.TN.Application.DTOs;
 using ERP.TN.Application.Services;
+using ERP.TN.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.TN.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class AccountingController : ControllerBase
 {
     private readonly IAccountingService _accountingService;
@@ -15,6 +19,7 @@ public class AccountingController : ControllerBase
     }
 
     [HttpGet("accounts")]
+    [Authorize(Policy = "FinanceAccess")]
     public async Task<IActionResult> GetAccounts()
     {
         var result = await _accountingService.GetAccountsAsync();
@@ -22,6 +27,7 @@ public class AccountingController : ControllerBase
     }
 
     [HttpGet("vouchers")]
+    [Authorize(Policy = "FinanceAccess")]
     public async Task<IActionResult> GetVouchers()
     {
         var result = await _accountingService.GetVouchersAsync();
@@ -29,7 +35,8 @@ public class AccountingController : ControllerBase
     }
 
     [HttpPost("vouchers")]
-    public async Task<IActionResult> PostVoucher([FromBody] ERP.TN.Application.DTOs.CreateVoucherRequest request)
+    [Authorize(Policy = "FinanceAccess")]
+    public async Task<IActionResult> PostVoucher([FromBody] CreateVoucherRequest request)
     {
         var result = await _accountingService.PostVoucherAsync(request);
         return Ok(result);

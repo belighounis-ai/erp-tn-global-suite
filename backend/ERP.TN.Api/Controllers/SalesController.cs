@@ -1,11 +1,13 @@
 using ERP.TN.Application.DTOs;
 using ERP.TN.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.TN.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class SalesController : ControllerBase
 {
     private readonly ISalesService _salesService;
@@ -16,6 +18,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = "OperationsAccess")]
     public async Task<IActionResult> GetOrders()
     {
         var result = await _salesService.GetSalesOrdersAsync();
@@ -23,6 +26,7 @@ public class SalesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "OperationsAccess")]
     public async Task<IActionResult> CreateOrder([FromBody] CreateSalesOrderRequest request)
     {
         var result = await _salesService.CreateSalesOrderAsync(request);
