@@ -17,6 +17,11 @@ public class AppDbContext : DbContext
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<TaxRule> TaxRules => Set<TaxRule>();
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<ChartOfAccount> ChartOfAccounts => Set<ChartOfAccount>();
+    public DbSet<Journal> Journals => Set<Journal>();
+    public DbSet<Voucher> Vouchers => Set<Voucher>();
+    public DbSet<VoucherLine> VoucherLines => Set<VoucherLine>();
+    public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,6 +76,36 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.FirstName).IsRequired();
             entity.Property(e => e.LastName).IsRequired();
+        });
+
+        modelBuilder.Entity<ChartOfAccount>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            entity.Property(a => a.Code).IsRequired();
+            entity.Property(a => a.Name).IsRequired();
+        });
+
+        modelBuilder.Entity<Journal>(entity =>
+        {
+            entity.HasKey(j => j.Id);
+            entity.Property(j => j.Code).IsRequired();
+        });
+
+        modelBuilder.Entity<Voucher>(entity =>
+        {
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.Number).IsRequired();
+        });
+
+        modelBuilder.Entity<VoucherLine>(entity =>
+        {
+            entity.HasKey(v => v.Id);
+        });
+
+        modelBuilder.Entity<BankAccount>(entity =>
+        {
+            entity.HasKey(b => b.Id);
+            entity.Property(b => b.Name).IsRequired();
         });
 
         base.OnModelCreating(modelBuilder);
