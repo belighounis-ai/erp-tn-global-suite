@@ -1,11 +1,11 @@
 {
   "name": "erp-tn-desktop",
   "version": "1.0.0",
-  "description": "Desktop client for ERP TN Global",
+  "description": "ERP TN Global desktop client",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --config electron-builder.json",
+    "build": "electron-builder --win --config electron-builder.json",
     "dist": "npm run build"
   },
   "devDependencies": {
