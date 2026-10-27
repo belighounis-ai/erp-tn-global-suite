@@ -1,4 +1,3 @@
-using ERP.TN.Application.DTOs;
 using ERP.TN.Application.Services;
 using ERP.TN.Infrastructure.Data;
 using ERP.TN.Infrastructure.Repositories;
@@ -29,6 +28,8 @@ builder.Services.AddScoped<IProcurementService, ProcurementService>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountingSeedService, AccountingSeedService>();
+builder.Services.AddScoped<IJournalService, JournalService>();
+builder.Services.AddScoped<IReportingService, ReportingService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "ERP_TUNISIE_SECRET_KEY_FOR_LOCAL_DEVELOPMENT_2026";
 var issuer = builder.Configuration["Jwt:Issuer"] ?? "ERP-TN";
