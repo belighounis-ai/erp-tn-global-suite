@@ -1,0 +1,10 @@
+{
+  "appId": "com.erp.tn.global",
+  "productName": "ERP TN Global",
+  "directories": {
+    "output": "dist"
+  },
+  "win": {
+    "target": ["portable", "nsis"]
+  }
+}
